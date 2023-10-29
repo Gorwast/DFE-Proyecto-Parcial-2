@@ -102,7 +102,24 @@ img {
 }
 
 header {
-    background-color: #b3d4fc;
+    background-color: #f13030;
+    padding: 10px;
+}
+
+header a {
+  color: white;
+  text-decoration: none;
+}
+
+header a:hover {
+  color: rgb(221, 211, 211);
+  text-decoration: dashed;
+}
+
+header a p {
+  font-family: Agbalumo;
+  font-size: 2rem;
+  font-weight: bold;
 }
 
 footer {
@@ -116,4 +133,23 @@ footer {
 
 footer h2 {
   font-weight: bold;
+}
+#current-section {
+  display: none;
+  padding: 1rem;
+}
+
+.notes-section {
+  min-height: 80vh;
+}
+
+.prioridad-Alta {
+  background-color: #f19c9c;
+}
+.prioridad-Media {
+  background-color: #f0c976;
+  
+}
+.prioridad-Baja {
+  background-color: #88ec74;
 }

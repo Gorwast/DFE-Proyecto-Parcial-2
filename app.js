@@ -1,18 +1,16 @@
-const apiURL = "https://65359710c620ba9358ec9353.mockapi.io";
+const apiURL = "https://653485e2e1b6f4c59046c7c7.mockapi.io/api/users/217204583";
 class Note {
-  constructor(id, createdAt, content) {
-    this.id = id;
-    this.createdAt = createdAt;
-    this.content = content;
+  constructor(id, title, description, completed, priority, tag, dueDate) {
+    this.id = id,
+      this.title = title,
+      this.description = description,
+      this.completed = completed,
+      this.priority = priority,
+      this.tag = tag,
+      this.dueDate = dueDate
   }
 }
 
-// Creamos objetos de modelos de casas
-const note1 = new Note(1, "21/06/2023", "Hermosa casa con vistas panorámicas.");
-
-//#region VISTA DE LOS MODELOS EN HTML (VIEW)
-
-// Funcion que controla el despliegue de un array de Note en la tabla, asi como el mensaje a mostrar.
 function displayTable(notes) {
   clearTable();
 
@@ -26,16 +24,16 @@ function displayTable(notes) {
 
       const tablaBody = document.getElementById("data-body");
 
-      const imagePath = `/img/notes`;
-
       notes.forEach((note) => {
-        const row = document.createElement("tr");
-
+        const row = document.createElement("div");
+        row.className = `col`;
         row.innerHTML = `
-        <div class="col">
+
             <div class="card shadow-sm">
-              <div class="card-body">
-                <p class="card-text">${note.id}. ${note.content}</p>
+              <div class="card-body prioridad-${note.priority}">
+                <h5 class="d-inline-flex justify-content-between align-items-left card-title"><i class="fa-solid fa-circle-check"></i>&nbsp;
+                ${note.title}</h5>
+                <p class="card-text">${note.description}</p>
                 <div class="d-flex justify-content-between align-items-center">
                   <div class="btn-group">
                     <button
@@ -52,12 +50,11 @@ function displayTable(notes) {
                       Eliminar
                     </button>
                   </div>
-                  <small class="text-muted">${compareDates(
-                    note.createdAt
-                  )}</small>
+                  <small class="text-muted">${note.tag}</small>
+                  <small class="text-muted">${note.dueDate}</small>
                 </div>
               </div>
-            </div>
+
           </div>
             `;
 
@@ -87,7 +84,15 @@ function showLoadingMessage() {
 function showNotFoundMessage() {
   const message = document.getElementById("message");
 
-  message.innerHTML = "No se encontraron Juegos con el filtro proporcionado.";
+  message.innerHTML = "No se encontraron Notas con el filtro proporcionado.";
+
+  message.style.display = "block";
+}
+
+function showErrorMessage() {
+  const message = document.getElementById("message");
+
+  message.innerHTML = "Hubo un error al realizar la operación.";
 
   message.style.display = "block";
 }
@@ -99,69 +104,71 @@ function hideMessage() {
   message.style.display = "none";
 }
 
-//#endregion
+function initFormForEditing(id) {
+  const noteInfo = searchItemData(id);
+  
+}
 
-//#region FILTROS (VIEW)
-
-// Funcion que inicializa los eventos de los botones del filto
 function initButtonsHandler() {
-  document.getElementById("filter-form").addEventListener("submit", (event) => {
+  document.getElementById("limpiar-button").addEventListener("click", () => {
+    document.getElementById('noteForm').reset();
+  });
+
+  document.getElementById("add-button").addEventListener("click", (event) => {
     event.preventDefault();
-    applyFilters();
+    showAddSection();
+    console.log("added")
   });
 
-  document.getElementById("reset-filters").addEventListener("click", () => {
-    document
-      .querySelectorAll("input.filter-field")
-      .forEach((input) => (input.value = ""));
-    applyFilters();
+  document.getElementById('noteForm').addEventListener('submit', function (e) {
+    e.preventDefault(); // Prevent the form from submitting as usual
+    createNote(); // Call the createNote function to process the form data
   });
 }
 
-// Funcion que gestiona la aplicacion del filtro a los datos y su despliegue.
-function applyFilters() {
-  const filterText = document.getElementById("text").value.toLowerCase();
-  const filterrating = parseFloat(document.getElementById("rating").value);
-  const filterMinPrice = parseFloat(document.getElementById("price-min").value);
-  const filterMaxPrice = parseFloat(document.getElementById("price-max").value);
+function showAddSection() {
+  const currentSection = document.getElementById("current-section");
+  if (currentSection.style.display === 'block') {
+    currentSection.style.display = 'none';
+  } else {
+    currentSection.style.display = 'block';
+  }
 
-  const filterednotes = filternotes(
-    noteList,
-    filterText,
-    filterrating,
-    filterMinPrice,
-    filterMaxPrice
-  );
-
-  displayTable(filterednotes);
 }
 
-// Funcion con la logica para filtrar las casas.
-function filterNotes(notes, text, rating, minPrice, maxPrice) {
-  return notes.filter(
-    (note) =>
-      (!rating || note.rating === rating) &&
-      (!minPrice || note.price >= minPrice) &&
-      (!maxPrice || note.price <= maxPrice) &&
-      (!text ||
-        note.name.toLowerCase().includes(text) ||
-        note.description.toLowerCase().includes(text))
-  );
-}
-
+//#region Data Managing
 function searchData() {
   const OPTIONS = {
     method: "GET",
   };
 
-  fetch(`${apiURL}/note`, OPTIONS)
+  fetch(`${apiURL}/tasks`, OPTIONS)
     .then((response) => response.json())
     .then((data) => {
       // Mapeamos los datos de modelos a objetos de la clase RealEstate.
       notesList = data.map((item) => {
-        return new Note(item.id, item.createdAt, item.content);
+        console.log(item);
+        return new Note(item.id, item.title, item.description, item.completed, item.priority, item.tag, item.dueDate);
       });
 
+      // Mostramos los datos en la vista.
+      displayTable(notesList);
+    })
+    .catch((error) => console.log(error));
+}
+
+function searchItemData(id) {
+  const OPTIONS = {
+    method: "GET",
+  };
+
+  fetch(`${apiURL}/tasks/${id}`, OPTIONS)
+    .then((response) => response.json())
+    .then((data) => {
+      // Mapeamos los datos de modelos a objetos de la clase RealEstate.
+      notesList = data.map((item) => {
+        return new Note(item.id, item.title, item.description, item.completed, item.priority, item.tag, item.dueDate);
+      });
       // Mostramos los datos en la vista.
       displayTable(notesList);
     })
@@ -172,11 +179,12 @@ function deleteData(id) {
   const OPTIONS = {
     method: "DELETE",
   };
-  fetch(`${apiURL}/note/${id}`, OPTIONS)
+  fetch(`${apiURL}/tasks/${id}`, OPTIONS)
     .then((res) => {
       if (res.ok) {
-        return res.json();
+        showLoadingMessage();
         searchData();
+        return res.json();
       }
       // handle error
     })
@@ -184,39 +192,79 @@ function deleteData(id) {
       // Do something with deleted task
     })
     .catch((error) => {
-      // handle error
+      showErrorMessage()
     });
 }
 
-function compareDates(date) {
-  // Get the current date and time
-  const currentDate = new Date();
-
-  // Replace this with the date you want to compare to
-  const otherDate = new Date(date);
-
-  // Calculate the time difference in milliseconds
-  const timeDifference = currentDate - otherDate;
-
-  // Calculate the difference in days, hours, or seconds
-  const millisecondsInADay = 1000 * 60 * 60 * 24;
-  const millisecondsInAnHour = 1000 * 60 * 60;
-
-  if (timeDifference >= millisecondsInADay) {
-    // Difference in days
-    const daysDifference = Math.floor(timeDifference / millisecondsInADay);
-    return `${daysDifference} Dias`;
-  } else if (timeDifference >= millisecondsInAnHour) {
-    // Difference in hours
-    const hoursDifference = Math.floor(timeDifference / millisecondsInAnHour);
-    return `${hoursDifference} Horas`;
-  } else {
-    // Difference in seconds
-    const secondsDifference = Math.floor(timeDifference / 1000);
-    return `${secondsDifference} Segundos`;
+function updateData(id, title, description, completed, priority, tag, dueDate) {
+  const currentNote = {
+    form: form,
+    title: title,
+    description: description,
+    completed: completed,
+    priority: priority,
+    tag: tag,
+    dueDate: dueDate,
   }
+  const OPTIONS = {
+    method: "PUT",
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify({currentNote})
+  };
+  fetch(`${apiURL}/tasks/${id}`, OPTIONS)
+    .then((res) => {
+      if (res.ok) {
+        showLoadingMessage();
+        searchData();
+        return res.json();
+      }
+    })
+    .then((task) => {
+    })
+    .catch((error) => {
+      showErrorMessage()
+    });
 }
-compareDates("2023-10-26T20:26:36.782Z");
+
+function createNote() {
+  const form = document.getElementById('noteForm');
+  const title = form.title.value;
+  const description = form.description.value;
+  const completed = form.completed.checked;
+  const priority = form.priority.value;
+  const tag = form.tag.value;
+  const dueDate = form.dueDate.value;
+
+  const newNote = {
+    form: form,
+    title: title,
+    description: description,
+    completed: completed,
+    priority: priority,
+    tag: tag,
+    dueDate: dueDate,
+  }
+
+  console.log(newNote);
+  fetch(`${apiURL}/tasks`, {
+    method: 'POST',
+    headers: { 'content-type': 'application/json' },
+    body: JSON.stringify(newNote)
+  }).then(res => {
+    if (res.ok) {
+      searchData()
+      return res.json();
+    }
+  }).then(task => {
+  }).catch(error => {
+    showErrorMessage()
+  })
+
+  form.reset();
+  showAddSection();
+}
+
+
 searchData();
 
 initButtonsHandler();
