@@ -8,11 +8,7 @@ class Note {
 }
 
 // Creamos objetos de modelos de casas
-const note1 = new Note(
-  1,
-  "21/06/2023",
-  "Hermosa casa con vistas panorámicas.",
-);
+const note1 = new Note(1, "21/06/2023", "Hermosa casa con vistas panorámicas.");
 
 //#region VISTA DE LOS MODELOS EN HTML (VIEW)
 
@@ -36,9 +32,33 @@ function displayTable(notes) {
         const row = document.createElement("tr");
 
         row.innerHTML = `
-              <p> ${note.id} </p>
-              <p>${note.createdAt}</p>
-              <p>${note.content}</p>
+        <div class="col">
+            <div class="card shadow-sm">
+              <div class="card-body">
+                <p class="card-text">${note.id}. ${note.content}</p>
+                <div class="d-flex justify-content-between align-items-center">
+                  <div class="btn-group">
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                    >
+                      Editar
+                    </button>
+                    <button
+                      type="button"
+                      class="btn btn-sm btn-outline-secondary"
+                      onclick="deleteData(${note.id})"
+                    >
+                      Eliminar
+                    </button>
+                  </div>
+                  <small class="text-muted">${compareDates(
+                    note.createdAt
+                  )}</small>
+                </div>
+              </div>
+            </div>
+          </div>
             `;
 
         tablaBody.appendChild(row);
@@ -139,11 +159,7 @@ function searchData() {
     .then((data) => {
       // Mapeamos los datos de modelos a objetos de la clase RealEstate.
       notesList = data.map((item) => {
-        return new Note(
-          item.id,
-          item.createdAt,
-          item.content
-        );
+        return new Note(item.id, item.createdAt, item.content);
       });
 
       // Mostramos los datos en la vista.
@@ -152,6 +168,55 @@ function searchData() {
     .catch((error) => console.log(error));
 }
 
+function deleteData(id) {
+  const OPTIONS = {
+    method: "DELETE",
+  };
+  fetch(`${apiURL}/note/${id}`, OPTIONS)
+    .then((res) => {
+      if (res.ok) {
+        return res.json();
+        searchData();
+      }
+      // handle error
+    })
+    .then((task) => {
+      // Do something with deleted task
+    })
+    .catch((error) => {
+      // handle error
+    });
+}
+
+function compareDates(date) {
+  // Get the current date and time
+  const currentDate = new Date();
+
+  // Replace this with the date you want to compare to
+  const otherDate = new Date(date);
+
+  // Calculate the time difference in milliseconds
+  const timeDifference = currentDate - otherDate;
+
+  // Calculate the difference in days, hours, or seconds
+  const millisecondsInADay = 1000 * 60 * 60 * 24;
+  const millisecondsInAnHour = 1000 * 60 * 60;
+
+  if (timeDifference >= millisecondsInADay) {
+    // Difference in days
+    const daysDifference = Math.floor(timeDifference / millisecondsInADay);
+    return `${daysDifference} Dias`;
+  } else if (timeDifference >= millisecondsInAnHour) {
+    // Difference in hours
+    const hoursDifference = Math.floor(timeDifference / millisecondsInAnHour);
+    return `${hoursDifference} Horas`;
+  } else {
+    // Difference in seconds
+    const secondsDifference = Math.floor(timeDifference / 1000);
+    return `${secondsDifference} Segundos`;
+  }
+}
+compareDates("2023-10-26T20:26:36.782Z");
 searchData();
 
 initButtonsHandler();
